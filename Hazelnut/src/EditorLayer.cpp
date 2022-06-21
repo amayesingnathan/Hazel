@@ -1,4 +1,9 @@
 #include "EditorLayer.h"
+
+#include "Panels/PanelManager.h"
+#include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+
 #include <imgui/imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -35,6 +40,9 @@ namespace Hazel {
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
+
+		m_SceneHierarchyPanel = PanelManager::Register<SceneHierarchyPanel>("Scene Heirarchy");
+		PanelManager::Register<ContentBrowserPanel>("Content Browser");
 
 		m_EditorScene = CreateRef<Scene>();
 		m_ActiveScene = m_EditorScene;
@@ -249,11 +257,18 @@ namespace Hazel {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("View"))
+			{
+				for (auto& [key, panel] : PanelManager::GetPanels())
+					ImGui::MenuItem(key.c_str(), nullptr, &panel.Displayed);
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenuBar();
 		}
 
-		m_SceneHierarchyPanel.OnImGuiRender();
-		m_ContentBrowserPanel.OnImGuiRender();
+		PanelManager::RenderPanels();
 
 		ImGui::Begin("Stats");
 
@@ -304,7 +319,7 @@ namespace Hazel {
 		}
 
 		// Gizmos
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1)
 		{
 			ImGuizmo::SetOrthographic(false);
@@ -499,7 +514,7 @@ namespace Hazel {
 		if (e.GetMouseButton() == Mouse::ButtonLeft)
 		{
 			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
-				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+				m_SceneHierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 		}
 		return false;
 	}
@@ -564,7 +579,7 @@ namespace Hazel {
 	{
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel->SetContext(m_ActiveScene);
 		
 		m_EditorScenePath = std::filesystem::path();
 	}
@@ -593,7 +608,7 @@ namespace Hazel {
 		{
 			m_EditorScene = newScene;
 			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_EditorScene);
+			m_SceneHierarchyPanel->SetContext(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
@@ -634,7 +649,7 @@ namespace Hazel {
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel->SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnSceneSimulate()
@@ -647,7 +662,7 @@ namespace Hazel {
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnSimulationStart();
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel->SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -663,7 +678,7 @@ namespace Hazel {
 
 		m_ActiveScene = m_EditorScene;
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel->SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDuplicateEntity()
@@ -671,7 +686,7 @@ namespace Hazel {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 		if (selectedEntity)
 			m_EditorScene->DuplicateEntity(selectedEntity);
 	}

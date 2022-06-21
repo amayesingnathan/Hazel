@@ -1,17 +1,19 @@
 #pragma once
 
-#include <filesystem>
+#include "PanelManager.h"
 
 #include "Hazel/Renderer/Texture.h"
 
+#include <filesystem>
+
 namespace Hazel {
 
-	class ContentBrowserPanel
+	class ContentBrowserPanel : public EditorPanel
 	{
 	public:
 		ContentBrowserPanel();
 
-		void OnImGuiRender();
+		void OnImGuiRender() override;
 	private:
 		std::filesystem::path m_CurrentDirectory;
 		

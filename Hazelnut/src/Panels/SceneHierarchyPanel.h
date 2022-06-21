@@ -1,12 +1,14 @@
 #pragma once
 
+#include "PanelManager.h"
+
 #include "Hazel/Core/Base.h"
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"
 
 namespace Hazel {
 
-	class SceneHierarchyPanel
+	class SceneHierarchyPanel : public EditorPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
@@ -14,7 +16,7 @@ namespace Hazel {
 
 		void SetContext(const Ref<Scene>& scene);
 
-		void OnImGuiRender();
+		void OnImGuiRender() override;
 
 		Entity GetSelectedEntity() const { return m_SelectionContext; }
 		void SetSelectedEntity(Entity entity);

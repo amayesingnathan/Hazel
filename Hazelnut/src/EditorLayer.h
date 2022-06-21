@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Hazel.h"
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
 
 #include "Hazel/Renderer/EditorCamera.h"
 
 namespace Hazel {
+
+	class SceneHierarchyPanel;
 
 	class EditorLayer : public Layer
 	{
@@ -82,8 +82,7 @@ namespace Hazel {
 		SceneState m_SceneState = SceneState::Edit;
 
 		// Panels
-		SceneHierarchyPanel m_SceneHierarchyPanel;
-		ContentBrowserPanel m_ContentBrowserPanel;
+		SceneHierarchyPanel* m_SceneHierarchyPanel = nullptr;
 
 		// Editor resources
 		Ref<Texture2D> m_IconPlay, m_IconSimulate, m_IconStop;
